@@ -1,29 +1,12 @@
 fun main() {
     fun part1(input: List<Int>): Int {
-        var count = 0
-        var prev = input[0]
-        for (current in input) {
-            if (current > prev) {
-                count++
-            }
-            prev = current
-        }
-        return count
+        val pairs: List<List<Int>> = input.windowed(2)
+        return pairs.count { (a, b) -> a < b }
     }
 
     fun part2(input: List<Int>): Int {
-        var count = 0
-        var prev = input[0]
-        for (i in input.indices) {
-            if (i > 2) {
-                val current = input[i]
-                if (current > prev) {
-                    count++
-                }
-                prev = input[i - 2]
-            }
-        }
-        return count
+        val groups: List<List<Int>> = input.windowed(4)
+        return groups.count { it[0] < it[3] }
     }
 
     // test if implementation meets criteria from the description, like:
