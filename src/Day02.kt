@@ -1,49 +1,50 @@
+data class Instruction(val direction: String, val amount: Int)
+
 fun main() {
-  fun part1(input: List<String>): Int {
+  fun linesToInstructions(input: List<String>): List<Instruction> {
+    return input.map {
+      val (direction, amount) = it.split(" ")
+      Instruction(direction, amount.toInt())
+    }
+  }
+
+  fun part1(input: List<Instruction>): Int {
     var vertical = 0
     var horizontal = 0
     input.forEach {
-      var modifier = 1
-      val row = it.split(" ")
-      val amount = row[1].toInt()
-      if (row[0] in setOf("up")) {
-        modifier = -1
-      }
-      if (row[0] in setOf("up", "down")) {
-        vertical += modifier * amount
-      } else {
-        horizontal += modifier * amount
+      when (it.direction) {
+        "up" -> vertical -= it.amount
+        "down" -> vertical += it.amount
+        "forward" -> horizontal += it.amount
       }
     }
     return vertical * horizontal
   }
 
-  fun part2(input: List<String>): Int {
+  fun part2(input: List<Instruction>): Int {
     var vertical = 0
     var horizontal = 0
     var aim = 0
     input.forEach {
-      var modifier = 1
-      val row = it.split(" ")
-      val amount = row[1].toInt()
-      if (row[0] in setOf("up")) {
-        modifier = -1
-      }
-      if (row[0] in setOf("up", "down")) {
-        aim += modifier * amount
-      } else {
-        horizontal += modifier * amount
-        vertical += aim * amount
+      when (it.direction) {
+        "up" -> aim -= it.amount
+        "down" -> aim += it.amount
+        "forward" -> {
+          horizontal += it.amount
+          vertical += aim * it.amount
+        }
       }
     }
     return vertical * horizontal
   }
 
   val testInput = readInput("Day02_test")
-  check(part1(testInput) == 150)
-  check(part2(testInput) == 900)
+  val testInstructions = linesToInstructions(testInput)
+  check(part1(testInstructions) == 150)
+  check(part2(testInstructions) == 900)
 
   val input = readInput("Day02")
-  println(part1(input))
-  println(part2(input))
+  val instructions = linesToInstructions(input)
+  println(part1(instructions))
+  println(part2(instructions))
 }
