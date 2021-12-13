@@ -1,65 +1,4 @@
 fun main() {
-  fun part1(input: List<String>): Int {
-    val counts = mutableMapOf<Int, Map<Char, Int>>()
-    input.forEach {
-      for (i in it.indices) {
-        val count = counts.getOrDefault(i, mapOf()).toMutableMap()
-        count[it[i]] = count.getOrDefault(it[i], 0) + 1
-        counts[i] = count
-      }
-    }
-    var out = ""
-    var other = ""
-    counts.forEach {
-      (_, u) -> run {
-        if (u['0']!! > u['1']!!) {
-          out += "0"
-          other += "1"
-        } else {
-          out += "1"
-          other += "0"
-        }
-      }
-    }
-    return out.toInt(2) * other.toInt(2)
-  }
-
-  fun splitLists(list: List<String>, bit: Int): List<List<String>> {
-    val ones = mutableListOf<String>()
-    val zeros = mutableListOf<String>()
-    list.stream().forEach {
-      if (it[bit] == '0') {
-        zeros.add(it)
-      } else {
-        ones.add(it)
-      }
-    }
-    return if (zeros.size > ones.size) {
-      listOf(zeros, ones)
-    } else {
-      listOf(ones, zeros)
-    }
-  }
-
-  fun part2(input: List<String>): Int {
-    var bit = 0
-    val filtered = splitLists(input, 0)
-    var more = filtered[0]
-    var less = filtered[1]
-    bit += 1
-    while (bit < input[0].length && (more.size > 1 || less.size > 1)) {
-      if (more.size > 1) {
-        more = splitLists(more, bit)[0]
-      }
-      if (less.size > 1) {
-        less = splitLists(less, bit)[1]
-      }
-      bit += 1
-    }
-    return more[0].toInt(2) * less[0].toInt(2)
-  }
-
-
   val testInput = readInput("Day03_test")
   check(part1(testInput) == 198)
   check(part2(testInput) == 230)
@@ -68,3 +7,57 @@ fun main() {
   println(part1(input))
   println(part2(input))
 }
+
+fun part1(input: List<String>): Int {
+  val columns = input[0].indices
+  val gammaRate = buildString {
+    columns.map {
+      val (zeros, ones) = input.countBitsInColumn(it)
+      val commonBit = if (zeros > ones) "0" else "1"
+      append(commonBit)
+    }
+  }
+  val epsilonRate = gammaRate.invertBinaryString()
+  return gammaRate.toInt(2) * epsilonRate.toInt(2)
+}
+
+
+fun part2(input: List<String>): Int {
+  fun rating(type: RatingType): String {
+    val columns = input[0].indices
+    var candidates = input
+    for (column in columns) {
+      val (zeroes, ones) = candidates.countBitsInColumn(column)
+      val mostCommon = if (zeroes > ones) '0' else '1'
+      candidates = candidates.filter {
+        when (type) {
+          RatingType.O2 -> it[column] == mostCommon
+          RatingType.CO2 -> it[column] != mostCommon
+        }
+      }
+      if (candidates.size == 1) break
+    }
+    return candidates.single()
+  }
+  return rating(RatingType.O2).toInt(2) * rating(RatingType.CO2).toInt(2)
+}
+
+private data class BitCount(val zeros: Int, val ones: Int)
+
+private enum class RatingType {
+  O2,
+  CO2
+}
+
+private fun List<String>.countBitsInColumn(column: Int): BitCount {
+  var zeros = 0
+  var ones = 0
+  for (line in this) {
+    if (line[column] == '0') zeros++ else ones++
+  }
+  return BitCount(zeros, ones)
+}
+
+private fun String.invertBinaryString() = this
+  .asIterable()
+  .joinToString("") { if (it == '0') "1" else "0" }
